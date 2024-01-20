@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rules\File;
 
 class AccountController extends Controller
 {
@@ -14,13 +13,14 @@ class AccountController extends Controller
     }
 
     public function accountPost(Request $request) {
-        $icon = $request->icon;
+        $request->validate([
+            'icon' => 'image'
+        ]);
 
-        if ($icon->is)
-        $path = $request->icon->store();
+        $path = $request->icon->store('public/images');
 
         $user = User::find(Auth::id());
-        $user->icon = $path;
+        $user->icon = basename($path);
         $user->save();
 
         return back()->with('toast', 'アイコンを変更しました');

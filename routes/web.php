@@ -3,6 +3,9 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\UserController;
+use App\Models\User;
+use App\Notifications\Followed;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,9 +19,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/home', function () {
+    return view('home');
+})->middleware('auth');
 
 Route::get('/users/{id}', [UserController::class, 'show'])->middleware('auth');
 Route::get('/users', [UserController::class, 'index'])->middleware('auth');
@@ -29,3 +32,17 @@ Route::post('/logout', [LoginController::class, 'logout']);
 
 Route::get('/account', [AccountController::class, 'accountGet'])->middleware('auth');
 Route::post('/account', [AccountController::class, 'accountPost'])->middleware('auth');
+
+Route::post('/notify', function() {
+    $user = User::find(Auth::id());
+    $user->notify(new Followed('notice test message'));
+    return back()->with('toast', '生成した');
+});
+
+Route::get('/notifications', function() {
+    $user = User::find(Auth::id());
+
+    return view('/notifications', [
+        'notifications' => $user->notifications
+    ]);
+});
